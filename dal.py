@@ -1,8 +1,10 @@
 # dal.py
+import hashlib
 from typing import List, Any
 from models import User,  Device, DeviceUsage,IotDevice
 from typing import Any
 from dbConnection import mydb
+from werkzeug.security import generate_password_hash
 
 class UserDao:
     @staticmethod
@@ -33,13 +35,13 @@ class UserDao:
         return None
 
     @staticmethod
-    def create_user(username: str, password_hash: str, email: str) -> User:
+    def create_user(username: str, password_hash: str, email: str) -> bool:
         cursor = mydb.cursor(dictionary=True)
         cursor.execute("INSERT INTO user (username, password_hash, email) VALUES (%s, %s, %s)", (username, password_hash, email))
         mydb.commit()
         cursor.close()
 
-        return User(username=username, password_hash=password_hash, email=email)
+        return True
 
     @staticmethod
     def delete_user(user_id: int) -> bool:
@@ -49,6 +51,30 @@ class UserDao:
         cursor.close()
         return True
     
+    @staticmethod
+    def signup_user(username: str, password: str, email: str) -> User:
+        password_hash = generate_password_hash(password)
+
+        cursor = mydb.cursor(dictionary=True)
+        cursor.execute("INSERT INTO user (username, password_hash, email) VALUES (%s, %s, %s)", (username, password_hash, email))
+        mydb.commit()
+        
+        cursor.execute("SELECT * FROM user WHERE username = %s", (username,))
+        result = cursor.fetchone()
+        cursor.close()
+
+        return User(**result) if result else None
+    
+    @staticmethod
+    def update_password(user_id: int, new_password: str) -> bool:
+        new_password_hash = hashlib.sha256(new_password.encode('utf-8')).hexdigest()
+
+        cursor = mydb.cursor(dictionary=True)
+        cursor.execute("UPDATE user SET password_hash = %s WHERE id = %s", (new_password_hash, user_id))
+        mydb.commit()
+        cursor.close()
+
+        return True
 class DeviceDao:
     @staticmethod
     def get_device_by_ip(ip_address: str) -> Device:
@@ -131,7 +157,7 @@ class IotDeviceDao:
     @staticmethod
     def get_iot_device_by_id(device_id: int) -> IotDevice:
         cursor = mydb.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM iot_device WHERE device_id = %s", (device_id,))
+        cursor.execute("SELECT * FROM iot_device WHERE id = %s", (device_id,))
         result = cursor.fetchone()
         cursor.close()
         return IotDevice(**result) if result else None
@@ -153,19 +179,20 @@ class IotDeviceDao:
         return [IotDevice(**row) for row in result]
 
     @staticmethod
-    def create_iot_device(user_id: int, mac: str, temp: float, datetime: str, latitude: float, longitude: float) -> IotDevice:
+    def create_iot_device(user_id: int, mac: str, temp: float) -> bool:
         cursor = mydb.cursor(dictionary=True)
-        cursor.execute("INSERT INTO iot_device (user_id, mac, temp, datetime, latitude, longitude) VALUES (%s, %s, %s, %s, %s, %s)",
-                       (user_id, mac, temp, datetime, latitude, longitude))
+        cursor.execute("INSERT INTO iot_device (user_id, mac, temp) VALUES (%s, %s, %s)",
+                    (user_id, mac, temp))
         mydb.commit()
         cursor.close()
-        return IotDevice(user_id=user_id, mac=mac, temp=temp, datetime=datetime, latitude=latitude, longitude=longitude)
+        return True
+
+
 
     @staticmethod
     def delete_iot_device(device_id: int) -> bool:
         cursor = mydb.cursor(dictionary=True)
-        cursor.execute("DELETE FROM iot_device WHERE device_id = %s", (device_id,))
+        cursor.execute("DELETE FROM iot_device WHERE id = %s", (device_id,))
         mydb.commit()
         cursor.close()
         return True
-    

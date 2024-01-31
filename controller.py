@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, session, url_for, flash
+from flask import Flask, jsonify, render_template, request, redirect, session, url_for, flash
 import matplotlib
 from snmp import graph , get_name , history , database
 from dal import *
@@ -6,7 +6,12 @@ from weather import get_weather_forecast, plot_temperature , extract_hourly_data
 matplotlib.use('Agg')
 from flask_session import Session
 from models import *
+from flask_jwt_extended import JWTManager ,create_access_token
+import hashlib
+
 app = Flask(__name__)
+app.config['JWT_SECRET_KEY'] = 'your_secret_key_here'
+jwt = JWTManager(app)
 app.secret_key = '4@2@3@1@6@4@2@1@'
 app.config['SESSION_TYPE'] = 'filesystem'
 Session(app)
@@ -17,6 +22,7 @@ def home():
         return redirect(url_for('devices'))
     else:
         return redirect(url_for('login'))
+    
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -24,21 +30,45 @@ def login():
         email = request.form.get('email')
         password = request.form.get('password')
         
-        user_info = UserDao.authenticate_user(email, password)
+        # Hash the entered password
+        hashed_entered_password = hashlib.sha256(password.encode('utf-8')).hexdigest()
+
+        user_info = UserDao.authenticate_user(email, hashed_entered_password)
         
         if user_info:
             user = User(**user_info)
             session['email'] = user.username  
             session['id'] = user.id
-            return redirect(url_for('home'))
+
+            access_token = create_access_token(identity=user.id)
+            
+            response = redirect(url_for('home'))
+            response.set_cookie('access_token_cookie', value=access_token, httponly=True)
+
+            return response
 
     return render_template('auth/login.html')
-
 
 @app.route('/logout')
 def logout():
     session.clear()
     return redirect(url_for('home'))
+
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    if request.method == 'POST':
+        username = request.form.get('User Name')
+        email = request.form.get('email')
+        password = request.form.get('password')
+
+        hashed_password = hashlib.sha256(password.encode('utf-8')).hexdigest()
+
+        UserDao.create_user(username, hashed_password, email)
+
+        flash('Account created successfully. Please log in.', 'success')
+        return redirect(url_for('login'))
+
+    return render_template('auth/signup.html')
 
 
 @app.route('/weather/<ip>')
@@ -100,3 +130,13 @@ def iot(ip):
     else:
         flash(f"Device with MAC address {ip} not found.", 'error')
         return redirect(url_for('devices'))
+    
+@app.route('/iot/temperature', methods=['POST'])
+def handle_temperature_data():
+    if request.method == 'POST':
+        data = request.json
+        mac_address = data.get('mac_address')
+        temperature = data.get('temperature')
+
+
+        return jsonify({"message": "Temperature data received successfully"}), 200

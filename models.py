@@ -26,15 +26,12 @@ class DeviceUsage():
 
 
 @dataclass
-class IotDevice():
+class IotDevice:
     id: int
     user_id: int
     mac: str
     temp: float
-    timestamp: str  
-    latitude: float
-    longitude: float
-
+    timestamp: str
 
 
 @dataclass

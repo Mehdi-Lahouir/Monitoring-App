@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Devices</title>
+    <link rel="stylesheet" href="../static/css/device_details.css">
+</head>
+<body>
+    <div class="navbar">
+        <span class="welcom">Welcome, {{ session["email"] }}!</span>
+        <button class="logout-btn" onclick="location.href='/logout'">Logout</button>
+    </div>
+    {% if device %}
+    <h2>Weather Forecast for {{ device.name }}</h2>
+    <p>Latitude: {{ device.latitude }}, Longitude: {{ device.longitude }}</p>
+    {% else %}
+        <p>Error: Device not found.</p>
+    {% endif %}
+    <!-- Use double curly braces for image_base64 -->
+    <img src="data:image/png;base64,{{ image_base64 }}" alt="Usage Plot">
+</body>
+</html>

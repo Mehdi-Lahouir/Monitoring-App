@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Devices</title>
+    <link rel="stylesheet" href="../static/css/devices.css">
+</head>
+<body>
+
+    <div class="navbar">
+        <span class="welcom">Welcome, {{ session["email"] }}!</span>
+        <button class="logout-btn" onclick="location.href='/logout'">Logout</button>
+    </div>
+
+    <!-- Form to add a new device -->
+    <form method="post" action="{{ url_for('add_device') }}">
+        
+        <div class="container">
+            <input type="text" id="ip_address" name="ip_address" class="input" required>
+            <label for="ip_address" class="label">IP Address:</label>
+        </div>
+        <br>
+        <div class="container">
+            <input type="text" id="mac_address" name="mac_address" class="input" required>
+            <label for="mac_address" class="label">MAC Address:</label>
+        </div>
+        <br>
+        <div class="container">
+            <input type="text" id="longitude" name="longitude" class="input" required>
+            <label for="longitude" class="label">Longitude:</label>
+        </div>
+        <br>
+        <div class="container">
+            <input type="text" id="latitude" name="latitude" class="input" required>
+            <label for="latitude" class="label">Latitude:</label>
+        </div>
+
+        <br>
+
+        <button type="submit" class="logout-btn">Add</button>
+    </form>
+
+    <hr>
+
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+        <ul class="flash-messages">
+        {% for message in messages %}
+            <li>{{ message }}</li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+    {% endwith %}
+
+    <!-- Display the list of devices in a table -->
+    {% if devices %}
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>IP Address</th>
+                <th>MAC Address</th>
+                <th>Longitude</th>
+                <th>Latitude</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for device in devices %}
+                <tr>
+                    <td>{{ device.name }}</td>
+                    <td>{{ device.ip_address }}</td>
+                    <td>{{ device.mac_address }}</td>
+                    <td>{{ device.longitude }}</td>
+                    <td>{{ device.latitude }}</td>
+                    <td>
+                        <a href="{{ url_for('device', ip=device.ip_address) }}">Details</a>
+                        <a href="{{ url_for('weather', ip=device.ip_address) }}">Weather</a>
+                        <a href="{{ url_for('iot', ip=device.ip_address) }}">IoT</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>No devices available.</p>
+{% endif %}
+</body>
+</html>

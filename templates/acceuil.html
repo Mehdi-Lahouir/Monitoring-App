@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acceuil</title>
+    <link rel="stylesheet" href="../static/css/acceuil.css">
+</head>
+<body>
+
+    <div class="navbar">
+        <span>Welcome, {{ session["email"] }}!</span>
+        <button class="logout-btn" onclick="location.href='/logout'">Logout</button>
+    </div>
+
+    <div class="content">
+        <div class="image-container">
+            <a href="{{ url_for('weather', latitude=selected_device.latitude, longitude=selected_device.longitude) }}">
+                <img src="https://i.pinimg.com/originals/e7/7a/60/e77a6068aa8bb2731e3b6d835c09c84c.gif" alt="Weather Image">
+                <p>Weather</p>
+            </a>
+            <a href="{{ url_for('devices_details', ip=selected_device.ip_address) }}">
+                <img src="https://i.gifer.com/Xvad.gif" alt="Devices Image">
+                <p>Devices</p>
+            </a>
+            <a href="{{ url_for('iot', mac=selected_device.mac_address) }}">
+                <img src="https://i.gifer.com/Ekwj.gif" alt="IoT Image">
+                <p>IoT</p>
+            </a>
+        </div>
+    </div>
+    
+
+</body>
+</html>

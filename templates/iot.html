@@ -4,9 +4,57 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Devices</title>
-    <link rel="stylesheet" href="../static/css/device_details.css">
+    <link rel="stylesheet" href="../static/css/devices.css">
 </head>
 <body>
-    
+    <div class="navbar">
+        <span class="welcom">Welcome, {{ session["email"] }}!</span>
+        <button class="logout-btn" onclick="location.href='/logout'">Logout</button>
+    </div>
+    {% if device %}
+    <div>
+        <button onclick="performAction('start_mqtt')">Start MQTT</button>
+        <button onclick="performAction('stop_mqtt')">Stop MQTT</button>
+        <button onclick="performAction('start_http')">Start HTTP</button>
+        <button onclick="performAction('stop_http')">Stop HTTP</button>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>User ID</th>
+                <th>MAC</th>
+                <th>Timestamp</th>
+                <th>Temperature</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for iot in iot %}
+                <tr>
+                    <td>{{ iot.id }}</td>
+                    <td>{{ iot.user_id }}</td>
+                    <td>{{ iot.mac }}</td>
+                    <td>{{ iot.timestamp }}</td>
+                    <td>{{ iot.temp }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        <p>Error: Device not found.</p>
+    {% endif %}
+
+    <script>
+        function performAction(action) {
+            fetch(`/iot/${action}`, { method: 'POST' })
+                .then(response => {
+                    if (response.ok) {
+                        console.log(`${action} successfully`);
+                    } else {
+                        console.error(`Failed to ${action}`);
+                    }
+                });
+        }
+    </script>
 </body>
 </html>

@@ -3,11 +3,12 @@ import matplotlib
 from snmp import graph , get_name , history , database
 from dal import *
 from weather import get_weather_forecast, plot_temperature , extract_hourly_data , make_temperature_prediction
-matplotlib.use('Agg')
 from flask_session import Session
 from models import *
 from flask_jwt_extended import JWTManager ,create_access_token
 import hashlib
+from iotmqtt import *
+from iothttp import *
 
 app = Flask(__name__)
 app.config['JWT_SECRET_KEY'] = 'your_secret_key_here'
@@ -15,6 +16,15 @@ jwt = JWTManager(app)
 app.secret_key = '4@2@3@1@6@4@2@1@'
 app.config['SESSION_TYPE'] = 'filesystem'
 Session(app)
+matplotlib.use('Agg')
+MQTT_BROKER_URL = 'test.mosquitto.org'
+MQTT_BROKER_PORT = 1883
+MQTT_TOPIC = 'iot/temperature'
+
+    
+SERVER_URL = 'http://127.0.0.1:8008'
+HTTP_ENDPOINT = '/iot/temperature'
+
 
 @app.route('/')
 def home():
@@ -125,18 +135,27 @@ def device(ip):
 @app.route('/iot/<ip>')
 def iot(ip):
     device = DeviceDao.get_device_by_ip(ip)
-    if device:
-        return render_template('iot.html', device = device)
-    else:
-        flash(f"Device with MAC address {ip} not found.", 'error')
-        return redirect(url_for('devices'))
+    iot = []
+    mqtt_device = MqttIoTDevice(device.mac_address, MQTT_BROKER_URL, MQTT_BROKER_PORT, MQTT_TOPIC, device.user_id)
+    http_device = HttpIoTDevice(device.mac_address, SERVER_URL, HTTP_ENDPOINT, device.user_id)  
     
-@app.route('/iot/temperature', methods=['POST'])
-def handle_temperature_data():
     if request.method == 'POST':
-        data = request.json
-        mac_address = data.get('mac_address')
-        temperature = data.get('temperature')
+        action = request.form.get('action')
+            
+        if action == 'start_mqtt':
+            mqtt_device.connect()
+            mqtt_device.start_sending()
+
+        elif action == 'stop_mqtt':
+            mqtt_device.stop_sending()
+        elif action == 'start_http':
+            http_device.start_sending()
+                
+        elif action == 'stop_http':
+            http_device.stop_sending()
+                
+    iot = IotDeviceDao.get_iot_devices_by_user(device.user_id)
+
+    return render_template('iot.html', iot=iot, device=device)
 
 
-        return jsonify({"message": "Temperature data received successfully"}), 200

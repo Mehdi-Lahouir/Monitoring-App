@@ -154,8 +154,36 @@ def iot(ip):
         elif action == 'stop_http':
             http_device.stop_sending()
                 
-    iot = IotDeviceDao.get_iot_devices_by_user(device.user_id)
+    iot = IotDeviceDao.get_iot_device_by_mac(device.mac_address)
 
     return render_template('iot.html', iot=iot, device=device)
 
 
+@app.route('/iot/start_http/<ip>', methods=['POST'])
+def start_http(ip):
+    device = DeviceDao.get_device_by_ip(ip)
+    http_device = HttpIoTDevice(device.mac_address, SERVER_URL, HTTP_ENDPOINT, device.user_id)
+    http_device.start_sending()
+    return jsonify({'success': True}), 200
+
+@app.route('/iot/stop_http/<ip>', methods=['POST'])
+def stop_http(ip):
+    device = DeviceDao.get_device_by_ip(ip)
+    http_device = HttpIoTDevice(device.mac_address, SERVER_URL, HTTP_ENDPOINT, device.user_id)
+    http_device.stop_sending()
+    return jsonify({'success': True}), 200
+
+@app.route('/iot/start_mqtt/<ip>', methods=['POST'])
+def start_mqtt(ip):
+    device = DeviceDao.get_device_by_ip(ip)
+    mqtt_device = MqttIoTDevice(device.mac_address, MQTT_BROKER_URL, MQTT_BROKER_PORT, MQTT_TOPIC, device.user_id) 
+    mqtt_device.connect()
+    mqtt_device.start_sending()
+    return jsonify({'success': True}), 200
+
+@app.route('/iot/stop_mqtt/<ip>', methods=['POST'])
+def stop_mqtt(ip):
+    device = DeviceDao.get_device_by_ip(ip)
+    mqtt_device = MqttIoTDevice(device.mac_address, MQTT_BROKER_URL, MQTT_BROKER_PORT, MQTT_TOPIC, device.user_id) 
+    mqtt_device.stop_sending()
+    return jsonify({'success': True}), 200

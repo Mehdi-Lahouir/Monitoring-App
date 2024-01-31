@@ -47,7 +47,7 @@ if __name__ == "__main__":
     MQTT_BROKER_PORT = 1883
     MQTT_TOPIC = 'iot/temperature'
 
-    mqtt_device = MqttIoTDevice(MQTT_BROKER_URL, MQTT_BROKER_PORT, MQTT_TOPIC, 1)
+    mqtt_device = MqttIoTDevice('',MQTT_BROKER_URL, MQTT_BROKER_PORT, MQTT_TOPIC, 1)
     mqtt_device.connect()
     mqtt_device.start_sending()
 

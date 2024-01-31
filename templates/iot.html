@@ -13,10 +13,10 @@
     </div>
     {% if device %}
     <div>
-        <button onclick="performAction('start_mqtt')">Start MQTT</button>
-        <button onclick="performAction('stop_mqtt')">Stop MQTT</button>
-        <button onclick="performAction('start_http')">Start HTTP</button>
-        <button onclick="performAction('stop_http')">Stop HTTP</button>
+        <button onclick="performAction('start_mqtt', '{{ device.ip_address }}')">Start MQTT</button>
+        <button onclick="performAction('stop_mqtt', '{{ device.ip_address }}')">Stop MQTT</button>
+        <button onclick="performAction('start_http', '{{ device.ip_address }}')">Start HTTP</button>
+        <button onclick="performAction('stop_http', '{{ device.ip_address }}')">Stop HTTP</button>
     </div>
     <table>
         <thead>
@@ -45,8 +45,8 @@
     {% endif %}
 
     <script>
-        function performAction(action) {
-            fetch(`/iot/${action}`, { method: 'POST' })
+        function performAction(action, ip) {
+            fetch(`/iot/${action}/${ip}`, { method: 'POST' })
                 .then(response => {
                     if (response.ok) {
                         console.log(`${action} successfully`);

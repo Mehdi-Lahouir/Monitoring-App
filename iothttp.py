@@ -42,6 +42,6 @@ if __name__ == "__main__":
     SERVER_URL = 'http://127.0.0.1:8008'
     HTTP_ENDPOINT = '/iot/temperature'
 
-    http_device = HttpIoTDevice(SERVER_URL, HTTP_ENDPOINT, 1)
+    http_device = HttpIoTDevice('',SERVER_URL, HTTP_ENDPOINT, 1)
     http_device.start_sending()
 

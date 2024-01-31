@@ -196,3 +196,13 @@ class IotDeviceDao:
         mydb.commit()
         cursor.close()
         return True
+    
+    @staticmethod
+    def get_iot_device_by_mac(mac_address: str) -> List[IotDevice]:
+        cursor = mydb.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM iot_device WHERE mac = %s", (mac_address,))
+        result = cursor.fetchall()
+        cursor.close()
+        return [IotDevice(**row) for row in result]
+    
+IotDeviceDao.get_iot_device_by_mac('98:54:1b:eb:5a:e1')

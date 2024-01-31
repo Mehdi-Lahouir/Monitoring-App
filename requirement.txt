@@ -6,6 +6,7 @@ click==8.1.7
 contourpy==1.2.0
 cycler==0.12.1
 Flask==3.0.0
+Flask-JWT-Extended==4.6.0
 Flask-Login==0.6.3
 Flask-MQTT==1.1.1
 Flask-Session==0.6.0
@@ -28,6 +29,7 @@ pillow==10.2.0
 ply==3.11
 pyasn1==0.5.1
 pycryptodomex==3.19.1
+PyJWT==2.8.0
 pyparsing==3.1.1
 pysmi==0.3.4
 pysnmp==4.4.12

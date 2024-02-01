@@ -7,7 +7,7 @@ import base64
 from sklearn.linear_model import LinearRegression
 import numpy as np
 import matplotlib.dates as mdates
-
+from matplotlib.dates import DateFormatter
 OPEN_METEO_API_URL = "https://api.open-meteo.com/v1/forecast"
 
 def get_weather_forecast(latitude, longitude):
@@ -52,7 +52,7 @@ def plot_temperature(weather_data):
 
     timestamps_dt = []
     timestamps_next = []
-    current_date = current_time.date()  
+    current_date = current_time.date()
 
     for timestamp in timestamps:
         if timestamp:
@@ -81,28 +81,28 @@ def plot_temperature(weather_data):
 
     next_12_hours_timestamps_num = mdates.date2num(next_12_hours_timestamps)
 
-    plt.figure()
+    fig, ax = plt.subplots()
 
-    plt.plot(next_12_hours_timestamps_num, next_12_hours_temperatures, label='Temperature (°C)')
-    plt.xlabel('Time')
-    plt.ylabel('Temperature (°C)')
-    plt.title('Hourly Temperature Forecast (Next 12 hours)')
-    plt.xticks(rotation=45, ha='right')
-    plt.legend()
-    plt.grid(True)
+    ax.plot(next_12_hours_timestamps_num, next_12_hours_temperatures, label='Temperature (°C)')
+
+    ax.xaxis.set_major_formatter(DateFormatter('%H:%M'))
+
+    ax.set_xlabel('Time (UTC)')
+    ax.set_ylabel('Temperature (°C)')
+    ax.set_title('Hourly Temperature Forecast (Next 12 hours)')
+    ax.legend()
+    ax.grid(True)
 
     for timestamp, temp in zip(next_12_hours_timestamps_num, next_12_hours_temperatures):
-        plt.text(timestamp, temp, f'{temp}°C', ha='center', va='bottom')
+        ax.text(timestamp, temp, f'{temp}°C', ha='center', va='bottom')
 
     image_stream = BytesIO()
     plt.savefig(image_stream, format='png')
     image_stream.seek(0)
     image_base64 = base64.b64encode(image_stream.read()).decode('utf-8')
-
     plt.close()
 
     return image_base64
-
 
 import matplotlib.dates as mdates
 import pytz
@@ -124,7 +124,7 @@ def make_temperature_prediction(timestamps, temperatures):
     fig, ax = plt.subplots()
     ax.plot(next_day_timestamps_np, predictions, label='Temperature Prediction (Next Day)')
     ax.xaxis.set_major_locator(mdates.DayLocator())
-    ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d %H:%M:%S'))
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
 
     plt.xlabel('Time')
     plt.ylabel('Temperature (°C)')
@@ -178,3 +178,5 @@ def extract_hourly_data(weather_data):
 
     min_length = min(len(timestamps_next), len(temperatures))
     return timestamps_next[:min_length], temperatures[:min_length]
+
+
